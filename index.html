@@ -898,7 +898,25 @@ main{max-width:1040px;padding:30px 24px 72px;}
   header.top{min-height:118px;padding:20px 18px 20px;}
   .logo-y2k{font-size:30px;}.logo-hub{font-size:12px;letter-spacing:5px;}.brand .sub{font-size:9px;}
   .tagline{display:none;}
-  main{padding:18px 14px calc(92px + env(safe-area-inset-bottom));}
+  /* Mobile app shell: the WINDOW itself never scrolls (that's what let iOS
+     Safari's address bar show/hide between tabs, which is what actually
+     made the bottom nav appear to jump — a `position:fixed` bar is pinned
+     to a viewport whose height silently changes as that bar animates).
+     Instead the page is one fixed-height flex column — header, then the
+     scrollable content, then the nav — so the nav is just a normal flex
+     item sized by its own fixed-height content. It can never move,
+     because nothing about it is computed from the viewport at all. */
+  html, body{height:100%;}
+  body{
+    display:flex; flex-direction:column; overflow:hidden;
+    height:100vh; height:100dvh;
+  }
+  header.top{flex:0 0 auto;}
+  .app-scroll{
+    order:1; flex:1 1 auto; min-height:0;
+    overflow-y:auto; -webkit-overflow-scrolling:touch;
+  }
+  main{padding:18px 14px 24px;}
   .section-title{font-size:16px;margin-top:26px;}
   .hero-card.primary{min-height:210px;padding:22px 20px;gap:16px;}
   .hero-card .stat-value{font-size:30px;}
@@ -911,7 +929,11 @@ main{max-width:1040px;padding:30px 24px 72px;}
   .pay-card{align-items:flex-start;}
   .pay-due{border-left:0;padding-left:0;flex-basis:100%;margin-left:62px;margin-top:-8px;}
   .pay-btn{margin-left:62px;}
-  .navbar-wrap{position:fixed;top:auto;bottom:0;left:0;right:0;border-top:1px solid #e4e7ec;border-bottom:0;box-shadow:0 -8px 22px rgba(15,23,42,.07);z-index:100;padding-bottom:max(10px, env(safe-area-inset-bottom));}
+  .navbar-wrap{
+    position:relative; order:2; flex:0 0 auto;
+    border-top:1px solid #e4e7ec;border-bottom:0;box-shadow:0 -8px 22px rgba(15,23,42,.07);
+    padding-bottom:max(10px, env(safe-area-inset-bottom));
+  }
   nav.tabs{justify-content:flex-start;padding:0 4px;}
   nav.tabs button{min-width:68px;height:51px;font-size:9.5px;padding:8px 8px 7px;border-bottom:0;border-top:3px solid transparent;}
   nav.tabs button.active{border-top-color:#f2591a;border-bottom-color:transparent;background:#fff3ea;}
@@ -929,7 +951,7 @@ main{max-width:1040px;padding:30px 24px 72px;}
 /* Shazam header banner image — replaces text lockup */
 header.top{
   position:relative; overflow:hidden; background:#2c2f34; color:inherit;
-  padding:calc(22px + env(safe-area-inset-top)) 0 0; border-bottom:0; min-height:0;
+  padding:calc(4px + env(safe-area-inset-top)) 0 0; border-bottom:0; min-height:0;
 }
 header.top:after{content:none!important;}
 header.top .header-star{display:none;}
@@ -937,7 +959,7 @@ header.top .header-star{display:none;}
   display:block; width:100%; height:auto; margin:0;
 }
 @media (max-width:760px){
-  header.top{min-height:0; padding:calc(30px + env(safe-area-inset-top)) 0 0;}
+  header.top{min-height:0; padding:calc(6px + env(safe-area-inset-top)) 0 0;}
 }
 
 </style>
@@ -968,6 +990,7 @@ header.top .header-star{display:none;}
   <button class="tab-scroll-btn tab-scroll-right" id="tabScrollRight" type="button" aria-label="Scroll tabs right"><span class="tsb-circle"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></button>
 </div>
 
+<div class="app-scroll">
 <main>
 
   <!-- HOME -->
@@ -1104,6 +1127,7 @@ header.top .header-star{display:none;}
   </section>
 
 </main>
+</div>
 
 <div id="lightbox" class="lightbox" onclick="closeLightbox()">
   <button class="lightbox-close" onclick="closeLightbox()" aria-label="Close">✕</button>
@@ -2215,7 +2239,13 @@ document.getElementById('tabs').addEventListener('click', (e)=>{
     const target = document.getElementById('calSelectedDayTitle');
     if(target){ target.scrollIntoView({behavior:'smooth', block:'start'}); }
   } else {
+    // On the desktop layout the document itself scrolls, so this resets it.
+    // On the mobile app-shell layout the window never scrolls (that's what
+    // stops the bottom nav from jumping around) — .app-scroll is the real
+    // scrolling element there, so it needs resetting too.
     window.scrollTo(0, 0);
+    const scrollEl = document.querySelector('.app-scroll');
+    if(scrollEl) scrollEl.scrollTop = 0;
   }
 });
 
