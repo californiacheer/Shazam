@@ -1911,13 +1911,14 @@ function renderComps(){
 }
 
 function renderPractice(){
+  const anyExtra = practice.some(p=>p.extra);
   document.getElementById('practiceGrid').innerHTML = practice.map(p=>`
     <div class="practice-card">
       <div class="practice-head">
         <span class="day-pill">${p.day.slice(0,3).toUpperCase()}</span>
         <span class="practice-time">${p.time}</span>
       </div>
-      <div class="practice-extra">${p.extra||''}</div>
+      ${anyExtra ? `<div class="practice-extra">${p.extra||''}</div>` : ''}
       ${p.img ? `<img class="practice-full-img" src="${checklistImages[p.img]}" alt="${p.day}${p.label?' — '+p.label:''}">` : ''}
       ${p.bow ? `<div class="practice-bow-note">${p.bow}</div>` : ''}
     </div>
