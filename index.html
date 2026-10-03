@@ -633,7 +633,10 @@ main{max-width:980px; margin:0 auto; padding:20px 20px 60px;}
   align-items:center; justify-content:center; padding:16px calc(16px + env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) calc(16px + env(safe-area-inset-left,0px));
 }
 .pdf-modal.open{display:flex;}
-.pdf-modal iframe{width:100%; height:100%; max-width:720px; border:0; border-radius:12px; background:#fff; box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.pdf-viewer{width:100%; max-width:720px; height:100%; margin:0 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; border-radius:12px; background:#fff; box-shadow:0 20px 60px rgba(0,0,0,.5); padding:8px; box-sizing:border-box;}
+.pdf-viewer canvas{width:100%; height:auto; display:block; border-radius:4px;}
+.pdf-loading{padding:60px 20px; text-align:center; color:#667; font-size:14px; line-height:1.6;}
+.pdf-loading a{color:#2563eb; font-weight:600;}
 .pdf-modal .lightbox-close{top:calc(18px + env(safe-area-inset-top,0px)); background:rgba(20,20,24,.78); box-shadow:0 2px 10px rgba(0,0,0,.35);}
 .pdf-modal .lightbox-close:hover{background:rgba(20,20,24,.9);}
 
@@ -1237,16 +1240,61 @@ header.top .header-star{display:none;}
 
 <div id="pdfModal" class="pdf-modal">
   <button class="lightbox-close" onclick="closePdfModal()" aria-label="Close">✕</button>
-  <iframe id="pdfFrame" src="" title="Makeup Shopping List"></iframe>
+  <div id="pdfViewer" class="pdf-viewer"></div>
 </div>
 <script>
-function openPdfModal(url){
-  document.getElementById('pdfFrame').src = url;
-  document.getElementById('pdfModal').classList.add('open');
+let pdfjsLibPromise = null;
+function loadPdfJs(){
+  if (!pdfjsLibPromise){
+    pdfjsLibPromise = import('./pdfjs/pdf.min.mjs').then(function(mod){
+      mod.GlobalWorkerOptions.workerSrc = './pdfjs/pdf.worker.min.mjs';
+      return mod;
+    });
+  }
+  return pdfjsLibPromise;
 }
+
+let pdfRenderToken = 0;
+async function openPdfModal(url){
+  const modal = document.getElementById('pdfModal');
+  const viewer = document.getElementById('pdfViewer');
+  const myToken = ++pdfRenderToken;
+  viewer.innerHTML = '<div class="pdf-loading">Loading…</div>';
+  modal.classList.add('open');
+  try{
+    const pdfjsLib = await loadPdfJs();
+    if (myToken !== pdfRenderToken) return;
+    const doc = await pdfjsLib.getDocument(url).promise;
+    if (myToken !== pdfRenderToken) return;
+    viewer.innerHTML = '';
+    const dpr = window.devicePixelRatio || 1;
+    for(let i=1;i<=doc.numPages;i++){
+      const page = await doc.getPage(i);
+      if (myToken !== pdfRenderToken) return;
+      const containerWidth = viewer.clientWidth - 16 || 340;
+      const base = page.getViewport({scale:1});
+      const scale = containerWidth / base.width;
+      const viewport = page.getViewport({scale: scale * dpr});
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.ceil(viewport.width);
+      canvas.height = Math.ceil(viewport.height);
+      canvas.style.width = '100%';
+      canvas.style.display = 'block';
+      if (i < doc.numPages) canvas.style.marginBottom = '10px';
+      viewer.appendChild(canvas);
+      const ctx = canvas.getContext('2d');
+      await page.render({canvasContext: ctx, viewport: viewport}).promise;
+    }
+  }catch(err){
+    if (myToken !== pdfRenderToken) return;
+    viewer.innerHTML = '<div class="pdf-loading">Couldn\'t load the preview.<br><a href="'+url+'" target="_blank" rel="noopener">Open the PDF directly</a></div>';
+  }
+}
+
 function closePdfModal(){
+  pdfRenderToken++;
   document.getElementById('pdfModal').classList.remove('open');
-  document.getElementById('pdfFrame').src = '';
+  document.getElementById('pdfViewer').innerHTML = '';
 }
 </script>
 
