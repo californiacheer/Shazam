@@ -22,6 +22,26 @@
   .topbar a:active{opacity:.75;}
   main{padding:16px; padding-bottom:calc(32px + env(safe-area-inset-bottom,0px));}
   img{display:block; width:100%; height:auto; border-radius:10px; box-shadow:0 8px 30px rgba(0,0,0,.4);}
+  .shop-title{
+    color:#fff; font-size:15px; font-weight:800; text-transform:uppercase;
+    letter-spacing:.04em; margin:22px 0 10px;
+  }
+  .shop-list{
+    display:flex; flex-direction:column; gap:9px;
+    list-style:none; margin:0; padding:0;
+  }
+  .shop-list a{
+    display:flex; align-items:center; gap:10px;
+    background:#fff; border-radius:12px; padding:13px 14px;
+    color:#1b1b1b; text-decoration:none; font-weight:700; font-size:14.5px;
+    box-shadow:0 2px 8px rgba(0,0,0,.2);
+  }
+  .shop-list a:active{background:#fff3ec;}
+  .shop-list .ico{
+    flex:0 0 auto; width:26px; height:26px; border-radius:50%;
+    background:#f2591a; color:#fff; display:flex; align-items:center; justify-content:center;
+    font-size:14px;
+  }
 </style>
 </head>
 <body>
@@ -30,6 +50,13 @@
   </div>
   <main>
     <img src="makeup-list.jpg" alt="Shazam makeup shopping list">
+    <div class="shop-title">Shop the look</div>
+    <ul class="shop-list">
+      <li><a href="https://a.co/d/0fJvKtsB?utm_source=chatgpt.com" target="_blank" rel="noopener"><span class="ico">🛍️</span> DOCOLOR Soul Orange Palette</a></li>
+      <li><a href="https://a.co/d/0f4wljQt?utm_source=chatgpt.com" target="_blank" rel="noopener"><span class="ico">🛍️</span> OULAC Glow Coral Gold Blush (F03)</a></li>
+      <li><a href="https://a.co/d/0j0EprzL?utm_source=chatgpt.com" target="_blank" rel="noopener"><span class="ico">🛍️</span> NYX Epic Ink Liner</a></li>
+      <li><a href="https://a.co/d/0csdsu6q?utm_source=chatgpt.com" target="_blank" rel="noopener"><span class="ico">🛍️</span> Rimmel Provocalips — I'll Call You (200)</a></li>
+    </ul>
   </main>
 </body>
 </html>
